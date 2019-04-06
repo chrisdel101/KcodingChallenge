@@ -1,0 +1,16 @@
+{
+  "name": "takehome",
+  "version": "1.0.0",
+  "description": "Koho take home test",
+  "main": "koho.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "author": "Chris Del",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mocha": "^6.0.2",
+    "nodemon": "^1.18.10"
+  }
+}
