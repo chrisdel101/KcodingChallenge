@@ -89,7 +89,6 @@ function getTranxDay(custObj, id) {
 			tranxDay[tranxKey]++
 		}
 	})
-	// console.log('TR', tranxDay)
 	return tranxDay
 }
 // count all tranactions matching curent date and sum - takes custObj and currentDate
