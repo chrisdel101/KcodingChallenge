@@ -237,64 +237,56 @@ function remove$(str) {
 	}
 }
 // /https://stackoverflow.com/a/49713276/5972531
-
 function convertToJson(file) {
-
 	return new Promise((resolve, reject) => {
-
-		const stream = fs.createReadStream(file);
-		// Handle stream error (IE: file not found)
-		stream.on('error', reject);
-
+		const stream = fs.createReadStream(file)
+		// Handle stream error (IE: file not
 		const reader = readline.createInterface({
 			input: stream
-		});
-
-		const array = [];
-
+		})
+		const array = []
 		reader.on('line', line => {
 			array.push(JSON.parse(line));
 		});
-
 		reader.on('close', () => resolve(array));
-	});
+	})
 }
+//
+// let data = []
+// let answers = []
+// convertToJson('input.txt')
+// 	.then(res => {
+// 		res.forEach(obj => data.push(obj))
+// 	})
+// 	.catch(err => console.error(err));
+// convertToJson('output.txt')
+// 	.then(res => {
+// 		res.forEach(obj => answers.push(obj))
+// 	})
+// 	.catch(err => console.error(err));
+//
 
-let data = []
-let answers = []
-convertToJson('input.txt')
-	.then(res => {
-		res.forEach(obj => data.push(obj))
-	})
-	.catch(err => console.error(err));
-convertToJson('output.txt')
-	.then(res => {
-		res.forEach(obj => answers.push(obj))
-	})
-	.catch(err => console.error(err));
 
-
-
-setTimeout(function() {
-	let countRight = 0
-	let countWrong = 0
-	data.map((obj, i) => {
-		// console.log()
-		let res = handleAccount(obj.id, obj.load_amount, obj.time, obj.customer_id)
-		// console.log(i, obj.customer_id, res)
-		// console.log(obj.id, answers[i].id)
-		// console.log(i + 1, obj.id, obj.customer_id, res, answers[i + 1].accepted, answers[i], o    bj.load_amount)
-		if(answers[i] && res === answers[i].accepted) {
-			countRight++
-		} else {
-			console.log('wrong', i, obj.id, obj.customer_id, res, answers[i], obj.load_amount)
-
-			countWrong++
-		}
-	})
-	console.log(countRight, countWrong)
-	// console.log(DB)
-}, 100)
+// setTimeout(function() {
+// 	let countRight = 0
+// 	let countWrong = 0
+// 	data.map((obj, i) => {
+// 		// console.log()
+// 		let res = handleAccount(obj.id, obj.load_amount, obj.time, obj.customer_id)
+// 		// console.log(i, obj.customer_id, res)
+// 		// console.log(obj.id, answers[i].id)
+// 		// console.log(i + 1, obj.id, obj.customer_id, res, answers[i + 1].accepted, answers[i], o    bj.load_amount)
+// 		if(answers[i] && res === answers[i].accepted) {
+// 			countRight++
+// 		} else {
+// 			console.log('wrong', i, obj.id, obj.customer_id, res, answers[i], obj.load_amount)
+//
+// 			countWrong++
+// 		}
+// 	})
+// 	console.log(countRight, countWrong)
+// 	// console.log(DB)
+// }, 100)
 // handleAccount("15889", "$4500.47", "1999-12-31T09:00:00Z", "528")
 // handleAccount("15866", "700.47", "2000-01-01T02:00:00Z", "528")
 //

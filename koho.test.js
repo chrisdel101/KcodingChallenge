@@ -1,8 +1,66 @@
 const assert = require('assert')
 const mocha = require('mocha')
 const customer = require('./koho')
+const fs = require('fs')
+const readline = require('readline')
 
-describe("Koho tests", function() {
+function convertToJson(file) {
+	return new Promise((resolve, reject) => {
+		const stream = fs.createReadStream(file)
+		// Handle stream error (IE: file not
+		const reader = readline.createInterface({
+			input: stream
+		})
+		const array = []
+		reader.on('line', line => {
+			array.push(JSON.parse(line));
+		});
+		reader.on('close', () => resolve(array));
+	})
+}
+
+function runTestData(input, output) {
+	let countRight = 0
+	let countWrong = 0
+	input.forEach((obj, i) => {
+		let res = customer.handleAccount(obj.id, obj.load_amount, obj.time, obj.customer_id)
+		if(output[i] && res === output[i].accepted) {
+			countRight++
+		} else {
+			countWrong++
+		}
+	})
+	return {
+		correct: countRight,
+		incorrect: countWrong
+	}
+}
+
+describe("Koho run full program test", function() {
+	it("should return 999 pass and 0 fail", function(done) {
+		// /https://stackoverflow.com/a/49713276/5972531
+		let input = []
+		let output = []
+		convertToJson('input.txt')
+			.then(res => {
+				res.forEach(obj => input.push(obj))
+			})
+			.catch(err => console.error(err));
+		convertToJson('output.txt')
+			.then(res => {
+				res.forEach(obj => output.push(obj))
+			})
+			.catch(err => console.error(err))
+		setTimeout(function() {
+			let res = runTestData(input, output)
+			assert(res.correct === 999)
+			assert(res.incorrect === 0)
+			done()
+		}, 100)
+	})
+})
+
+describe("Koho unit tests", function() {
 	describe("addFunds()", function() {
 		it('returns an object', function() {
 			// let cusmtomer =
