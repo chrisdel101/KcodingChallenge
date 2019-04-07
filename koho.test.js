@@ -14,7 +14,7 @@ describe("Koho run full program test", function() {
 			.then(res => {
 				res.forEach(obj => input.push(obj))
 			})
-			.catch(err => console.error(err));
+			.catch(err => console.error(err))
 		convertToJson('output.txt')
 			.then(res => {
 				res.forEach(obj => output.push(obj))
@@ -86,49 +86,7 @@ describe("Koho unit tests", function() {
 			let res = customer.getTranxDay(custObj)
 			assert.deepEqual(res, { "1999-12-31": 1, '2000-1-1': 1, '2001-2-1': 3 })
 		})
-		describe("verifyTranxDay()", function() {
-			it("return false when more than 3 per day", function() {
-				// customer.mainTranasction("15888", "$400 .47", "2000-01-01T00:00:00Z", "500")
-				// customer.mainTranasction("15889", "$3318 .47", "2000-01-01T01:00:00Z", "500")
-				// customer.mainTranasction("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
-				customer.mainTranasction("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
-				let res = customer.mainTranasction("15864", "$400 .47", "2000-01-01T00:00:00Z", "500")
-				assert(!res)
-
-			})
-		})
-		describe("getDailySum()", function() {
-			//need to find 3 tranx in same day
-			it.skip("returns sum of all daily transactions", function() {
-				let custObj = {
-					'2000-01-01T00:00:00Z': { id: '528', tranxId: '15888', loadAmount: '500.50' },
-					'1999-12-31T09:00:00Z': { id: '528', tranxId: '15889', loadAmount: '5' },
-					'2001-02-01T00:00:00Z': { id: '528', tranxId: '15883', loadAmount: '0.432' }
-				}
-				let res = customer.getDailySum(custObj, "1999-12-31T09:00:00Z")
-				assert(res)
-			})
-		})
 		describe("verifyAmountPerDay()", function() {
-			// need to find false ex
-			it.skip("returns true if total is under 5000", function() {
-				let custObj = {
-					'2000-01-01T00:00:00Z': {
-						id: '528',
-						tranxId: '15888',
-						loadAmount: '400.47',
-						readAbleDate: '1999-12-31'
-					},
-					'1999-12-31T09:00:00Z': {
-						id: '528',
-						tranxId: '15889',
-						loadAmount: '4500.47',
-						readAbleDate: '1999-12-31'
-					}
-				}
-				let res = customer.verifyAmountPerDay(custObj, "2000-01-01T00:00:00Z", customer.remove$("$700"))
-				assert(!res)
-			})
 			it("returns true if total is under 5000", function() {
 				let custObj = {
 					'2000-01-01T05:06:50Z': {
@@ -280,7 +238,7 @@ describe("Koho unit tests", function() {
 	})
 })
 
-
+// https://stackoverflow.com/a/49713276/5972531
 function convertToJson(file) {
 	return new Promise((resolve, reject) => {
 		const stream = fs.createReadStream(file)
@@ -290,9 +248,9 @@ function convertToJson(file) {
 		})
 		const array = []
 		reader.on('line', line => {
-			array.push(JSON.parse(line));
-		});
-		reader.on('close', () => resolve(array));
+			array.push(JSON.parse(line))
+		})
+		reader.on('close', () => resolve(array))
 	})
 }
 
@@ -300,7 +258,7 @@ function runTestData(input, output) {
 	let countRight = 0
 	let countWrong = 0
 	input.forEach((obj, i) => {
-		let res = customer.mainTranasction(obj.id, obj.load_amount, obj.time, obj.customer_id)
+		let res = customer.mainTransaction(obj.id, obj.load_amount, obj.time, obj.customer_id)
 		// console.log(res)
 		if(output[i] && res.accepted === output[i].accepted) {
 			countRight++
@@ -308,7 +266,6 @@ function runTestData(input, output) {
 			countWrong++
 		}
 	})
-	console.log(countRight, countWrong)
 	return {
 		correct: countRight,
 		incorrect: countWrong

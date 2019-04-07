@@ -4,14 +4,12 @@
   "description": "Koho take home test",
   "main": "koho.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "test": "mocha koho.test.js"
   },
   "author": "Chris Del",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.4",
     "mocha": "^6.0.2",
-    "moment": "^2.24.0",
-    "nodemon": "^1.18.10"
+    "moment": "^2.24.0"
   }
 }

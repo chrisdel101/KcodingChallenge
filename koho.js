@@ -1,11 +1,12 @@
 const moment = require('moment')
 const fs = require('fs')
-var readline = require('readline');
+const readline = require('readline')
 
-let DB = {}
+const DB = {}
+
 
 // add to DB or fail return false - takes tranxsID, loadAmount, currentDate, customerID
-function mainTranasction(id, load_amount, date, customerId) {
+function mainTransaction(id, load_amount, date, customerId) {
 	if(!DB[customerId]) {
 		// check for 5000 dep
 		if(!verifyUnder5000(parseFloat(remove$(load_amount)))) return jsonResponse(id, customerId, false)
@@ -36,8 +37,8 @@ function jsonResponse(tranxID, customerID, status) {
 }
 // check if days are within the same week - takes dateone and datetwo
 function isSameWeek(currentDate, otherTranxDate) {
-	var input1 = moment(currentDate, moment.ISO_8601)
-	var input2 = moment(otherTranxDate, moment.ISO_8601)
+	let input1 = moment(currentDate, moment.ISO_8601)
+	let input2 = moment(otherTranxDate, moment.ISO_8601)
 	return input1.isoWeek() === input2.isoWeek() ? true : false
 	// SOURCE https://stackoverflow.com/a/44330556/5972531
 }
@@ -60,7 +61,7 @@ function getWeeklySum(custObj, currentDate) {
 function verifyAmountWeek(custObj, date, load_amount) {
 	let weeklySum = getWeeklySum(custObj, date, load_amount)
 	if(weeklySum + parseFloat(remove$(load_amount)) > 20000) {
-		// console.error("Weekly limit of 20000 has been reached")
+		console.error("Weekly limit of 20000 has been reached")
 		return false
 	} else {
 		return true
@@ -77,7 +78,7 @@ function makeDateObj(dateStr) {
 }
 // takes a customer obj returns all tranx per day - takes custObj and currentDate
 function getTranxDay(custObj, id) {
-	let tranxDay = {}
+	const tranxDay = {}
 	// go through and count transactions inside each key
 	Object.keys(custObj).forEach(dateKey => {
 		let tranxKey = makeDateObj(dateKey)
@@ -95,7 +96,7 @@ function getTranxDay(custObj, id) {
 function getDailySum(custObj, date) {
 	let currentDate = makeDateObj(date)
 	let tranxPerDay = getTranxDay(custObj)
-	for(var tranxDate of Object.keys(tranxPerDay)) {
+	for(let tranxDate of Object.keys(tranxPerDay)) {
 		if(currentDate === tranxDate) {
 			const amounts = Object.values(custObj).map(val => {
 				// find value that matches curent date
@@ -118,7 +119,7 @@ function getDailySum(custObj, date) {
 function verifyAmountPerDay(custObj, date, load_amount) {
 	let dailySum = getDailySum(custObj, date)
 	if(parseFloat(dailySum) + parseFloat(remove$(load_amount)) > 5000) {
-		// console.error("Maximum depoist of 5000 reached. Cannot add.")
+		console.error("Maximum depoist of 5000 reached. Cannot add.")
 		return false
 	} else {
 		return true
@@ -128,21 +129,18 @@ function verifyAmountPerDay(custObj, date, load_amount) {
 function verifyTranxDay(custObj, date, id) {
 	let currentDate = makeDateObj(date)
 	let tranxPerDay = getTranxDay(custObj)
-	// console.log(currentDate)
-	// console.log(tranxPerDay)
 	//SOURCE https://stackoverflow.com/questions/52528760/javascript-function-returns-true-when-it-should-return-false
-	for(var tranxDate of Object.keys(tranxPerDay)) {
+	for(let tranxDate of Object.keys(tranxPerDay)) {
 		// check current date against all customer transactions
 		if(currentDate === tranxDate) {
 			if(parseInt(tranxPerDay[tranxDate]) >= 3) {
-				// console.error("Maximun 3 transactions per day reached")
+				console.error("Maximun 3 transactions per day reached")
 				return false
 			}
 		}
 	}
 	return true
 }
-
 // create and add funds
 function createAccount(id, load_amount, date, customerId) {
 	let obj = {
@@ -155,7 +153,7 @@ function createAccount(id, load_amount, date, customerId) {
 // verify sinlgele deposit not over 5000
 function verifyUnder5000(amount) {
 	if(amount > 5000) {
-		// console.error("Cannot deposit amounts over 5000.")
+		console.error("Cannot deposit amounts over 5000.")
 		return false
 	}
 	return true
@@ -171,7 +169,6 @@ function addFunds(tranxId, load_amount, customer_id, date) {
 			readAbleDate: makeDateObj(date)
 		}
 	} else if(!verifyUnder5000) {
-		// console.error("$5000 max reached for the day")
 		return
 	}
 }
@@ -187,7 +184,7 @@ function remove$(str) {
 	}
 }
 module.exports = {
-	mainTranasction: mainTranasction,
+	mainTransaction: mainTransaction,
 	addFunds: addFunds,
 	verifyUnder5000: verifyUnder5000,
 	verifyAmountWeek: verifyAmountWeek,
