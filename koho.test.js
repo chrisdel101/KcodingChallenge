@@ -4,37 +4,6 @@ const customer = require('./koho')
 const fs = require('fs')
 const readline = require('readline')
 
-function convertToJson(file) {
-	return new Promise((resolve, reject) => {
-		const stream = fs.createReadStream(file)
-		// Handle stream error (IE: file not
-		const reader = readline.createInterface({
-			input: stream
-		})
-		const array = []
-		reader.on('line', line => {
-			array.push(JSON.parse(line));
-		});
-		reader.on('close', () => resolve(array));
-	})
-}
-
-function runTestData(input, output) {
-	let countRight = 0
-	let countWrong = 0
-	input.forEach((obj, i) => {
-		let res = customer.makeTransaction(obj.id, obj.load_amount, obj.time, obj.customer_id)
-		if(output[i] && res === output[i].accepted) {
-			countRight++
-		} else {
-			countWrong++
-		}
-	})
-	return {
-		correct: countRight,
-		incorrect: countWrong
-	}
-}
 
 describe("Koho run full program test", function() {
 	it("should return 999 pass and 0 fail", function(done) {
@@ -63,7 +32,6 @@ describe("Koho run full program test", function() {
 describe("Koho unit tests", function() {
 	describe("addFunds()", function() {
 		it('returns an object', function() {
-			// let cusmtomer =
 			let res = customer.addFunds("1", "500", "200", "2000-01-01T00:00:00Z")
 			assert.deepEqual(res, {
 				id: '200',
@@ -98,7 +66,6 @@ describe("Koho unit tests", function() {
 	describe("makeDateObj()", function() {
 		it("returns date parts obj from date string", function() {
 			let res = customer.makeDateObj("1999-12-31T03:00:00Z")
-			console.log('res', res)
 			assert.deepEqual(res, "1999-12-31")
 		})
 	})
@@ -121,10 +88,11 @@ describe("Koho unit tests", function() {
 		})
 		describe("verifyTranxDay()", function() {
 			it("return false when more than 3 per day", function() {
-				customer.makeTransaction("15888", "$400 .47", "2000-01-01T00:00:00Z", "500")
-				customer.makeTransaction("15889", "$3318 .47", "2000-01-01T09:00:00Z", "500")
-				customer.makeTransaction("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
-				let res = customer.makeTransaction("15864", "$400 .47", "2000-01-01T02:00:00Z", "500")
+				// customer.mainTranasction("15888", "$400 .47", "2000-01-01T00:00:00Z", "500")
+				// customer.mainTranasction("15889", "$3318 .47", "2000-01-01T01:00:00Z", "500")
+				// customer.mainTranasction("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
+				customer.mainTranasction("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
+				let res = customer.mainTranasction("15864", "$400 .47", "2000-01-01T00:00:00Z", "500")
 				assert(!res)
 
 			})
@@ -138,7 +106,6 @@ describe("Koho unit tests", function() {
 					'2001-02-01T00:00:00Z': { id: '528', tranxId: '15883', loadAmount: '0.432' }
 				}
 				let res = customer.getDailySum(custObj, "1999-12-31T09:00:00Z")
-				console.log('RES', res)
 				assert(res)
 			})
 		})
@@ -160,7 +127,6 @@ describe("Koho unit tests", function() {
 					}
 				}
 				let res = customer.verifyAmountPerDay(custObj, "2000-01-01T00:00:00Z", customer.remove$("$700"))
-				// console.log('RES', res)
 				assert(!res)
 			})
 			it("returns true if total is under 5000", function() {
@@ -245,18 +211,15 @@ describe("Koho unit tests", function() {
 					}
 				}
 				let res = customer.verifyAmountPerDay(custObj, "2000-01-30T16:52:34Z", customer.remove$("$189.32"))
-				console.log('RES', res)
 				assert(res)
 			})
 			describe("isSameWeek()", function() {
 				it("returns true when in the same week", function() {
 					let res = customer.isSameWeek("2019-04-06T22:24:18.401Z", "2019-04-05T00:18:40Z")
-					console.log('res', res)
 					assert(res)
 				})
 				it("returns something", function() {
 					let res = customer.isSameWeek("2000-01-01T00:00:00Z", "2000-01-01T11:15:02Z")
-					console.log('res', res)
 					assert(res)
 				})
 			})
@@ -283,7 +246,6 @@ describe("Koho unit tests", function() {
 						}
 					}
 					let res = customer.getWeeklySum(custObj, "2000-01-03T00:00:00Z", "$3000")
-					console.log('res', res)
 					assert(res === 5347.9400000000005)
 				})
 			})
@@ -310,7 +272,6 @@ describe("Koho unit tests", function() {
 						}
 					}
 					let res = customer.verifyAmountWeek(custObj, "2000-01-03T00:00:00Z", "$3000")
-					// console.log('res', res)
 					assert(!res)
 				})
 			})
@@ -318,3 +279,38 @@ describe("Koho unit tests", function() {
 		})
 	})
 })
+
+
+function convertToJson(file) {
+	return new Promise((resolve, reject) => {
+		const stream = fs.createReadStream(file)
+		// Handle stream error (IE: file not
+		const reader = readline.createInterface({
+			input: stream
+		})
+		const array = []
+		reader.on('line', line => {
+			array.push(JSON.parse(line));
+		});
+		reader.on('close', () => resolve(array));
+	})
+}
+
+function runTestData(input, output) {
+	let countRight = 0
+	let countWrong = 0
+	input.forEach((obj, i) => {
+		let res = customer.mainTranasction(obj.id, obj.load_amount, obj.time, obj.customer_id)
+		// console.log(res)
+		if(output[i] && res.accepted === output[i].accepted) {
+			countRight++
+		} else {
+			countWrong++
+		}
+	})
+	console.log(countRight, countWrong)
+	return {
+		correct: countRight,
+		incorrect: countWrong
+	}
+}
