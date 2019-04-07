@@ -25,8 +25,8 @@ function handleAccount(id, load_amount, date, customerId) {
 		console.log('two')
 		if(!verifyAmountWeek(DB[customerId], date, load_amount)) return false
 		console.log('three')
-		// console.log('below')
-		// console.log(verifyAmountPerDay(DB[customerId], date))
+
+		// console.log(DB[customerId])
 		getTranxDay(DB[customerId])
 		// console.log('below', DB[customerId])
 		DB[customerId][date] = addFunds(id, remove$(load_amount), customerId, date)
@@ -97,6 +97,7 @@ function makeDateObj(dateStr) {
 }
 // takes a customer obj returns all tranx per day
 function getTranxDay(custObj, id) {
+	// console.log(custObj)
 	let tranxDay = {}
 	// once object is made go through and count transactions
 	Object.keys(custObj).forEach(dateKey => {
@@ -118,7 +119,7 @@ function getTranxDay(custObj, id) {
 }
 // count all tranactions matching curent date and add up
 function getDailySum(custObj, date) {
-
+	// console.log(date)
 	let currentDate = makeDateObj(date)
 	// console.log(currentDate)
 	let tranxPerDay = getTranxDay(custObj)
@@ -128,15 +129,21 @@ function getDailySum(custObj, date) {
 		if(currentDate === tranxDate) {
 			// console.log("currentDate", currentDate)
 			// console.log("tranxDate", tranxDate)
-			// console.log('CUS', custObj)
+			// console.log('CUS', custObj[date])
 			const amounts = Object.values(custObj).map(val => {
-				return val.loadAmount
-			})
+				// find value that matches curent date
+				// console.log(val.readAbleDate)
+				if(val.readAbleDate === currentDate) {
+					return val.loadAmount
+				}
+				// return val.loadAmount
+			}).filter(obj => obj)
 			// console.log('ammounts', amounts)
+			if(!amounts.length) return 0
 			const sum = amounts.reduce((acc, cur) => {
 				return parseFloat(acc) + parseFloat(cur)
 			})
-			// console.log('SUM',sum)
+			console.log('SUM', sum)
 			return sum
 		}
 	}
@@ -148,8 +155,8 @@ function verifyAmountPerDay(custObj, date, load_amount) {
 	// console.log('CC', custObj, date, load_amount)
 	// console.log(date)
 	let dailySum = getDailySum(custObj, date)
-	console.log('SUM', dailySum)
-	console.log(custObj)
+	// console.log('SUM', dailySum)
+	// console.log(custObj)
 	if(parseFloat(dailySum) + parseFloat(remove$(load_amount)) > 5000) {
 		console.log("Maximum depoist of 5000 reached. Cannot add.")
 		return false
@@ -216,6 +223,8 @@ function addFunds(tranxId, load_amount, customer_id, date) {
 		return
 	}
 }
+let res = addFunds("1", "500", "200", "2000-01-01T00:00:00Z")
+// console.log(res)
 
 function remove$(str) {
 	if(str.startsWith("$")) {
@@ -269,18 +278,21 @@ convertToJson('output.txt')
 setTimeout(function() {
 	let countRight = 0
 	let countWrong = 0
-	data.forEach((obj, i) => {
+	data.map((obj, i) => {
 		// console.log()
 		let res = handleAccount(obj.id, obj.load_amount, obj.time, obj.customer_id)
-		console.log(i, obj.customer_id, res)
-		console.log(i, res === answers[i].accepted)
-		// if(answers[i] && res === answers[i].accepted) {
-		// 	countRight++
-		// } else {
-		// 	countWrong++
-		// }
+		// console.log(i, obj.customer_id, res)
+		// console.log(obj.id, answers[i].id)
+		// console.log(i + 1, obj.id, obj.customer_id, res, answers[i + 1].accepted, answers[i], o    bj.load_amount)
+		if(answers[i] && res === answers[i].accepted) {
+			countRight++
+		} else {
+			console.log('wrong', i, obj.id, obj.customer_id, res, answers[i], obj.load_amount)
+
+			countWrong++
+		}
 	})
-	// console.log(countRight, countWrong)
+	console.log(countRight, countWrong)
 	// console.log(DB)
 }, 100)
 // handleAccount("15889", "$4500.47", "1999-12-31T09:00:00Z", "528")
@@ -328,3 +340,6 @@ module.exports = {
 	getWeeklySum: getWeeklySum
 
 }
+
+// wrong 697 20485
+//
