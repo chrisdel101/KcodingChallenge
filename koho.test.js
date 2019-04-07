@@ -23,7 +23,7 @@ function runTestData(input, output) {
 	let countRight = 0
 	let countWrong = 0
 	input.forEach((obj, i) => {
-		let res = customer.handleAccount(obj.id, obj.load_amount, obj.time, obj.customer_id)
+		let res = customer.makeTransaction(obj.id, obj.load_amount, obj.time, obj.customer_id)
 		if(output[i] && res === output[i].accepted) {
 			countRight++
 		} else {
@@ -121,10 +121,10 @@ describe("Koho unit tests", function() {
 		})
 		describe("verifyTranxDay()", function() {
 			it("return false when more than 3 per day", function() {
-				customer.handleAccount("15888", "$400 .47", "2000-01-01T00:00:00Z", "500")
-				customer.handleAccount("15889", "$3318 .47", "2000-01-01T09:00:00Z", "500")
-				customer.handleAccount("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
-				let res = customer.handleAccount("15864", "$400 .47", "2000-01-01T02:00:00Z", "500")
+				customer.makeTransaction("15888", "$400 .47", "2000-01-01T00:00:00Z", "500")
+				customer.makeTransaction("15889", "$3318 .47", "2000-01-01T09:00:00Z", "500")
+				customer.makeTransaction("15876", "$400 .47", "2000-01-01T01:00:00Z", "500")
+				let res = customer.makeTransaction("15864", "$400 .47", "2000-01-01T02:00:00Z", "500")
 				assert(!res)
 
 			})
