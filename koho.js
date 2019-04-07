@@ -1,38 +1,96 @@
+const moment = require('moment')
+const fs = require('fs')
+var readline = require('readline');
+
 let DB = {}
 
 function handleAccount(id, load_amount, date, customerId) {
 	// if not there, create and add
 	if(!DB[customerId]) {
+		// console.log('id', id)
 		// check for 5000
-		if(!verifyUnder5000(load_amount)) return false
+		if(!verifyUnder5000(parseFloat(remove$(load_amount)))) return false
 		// console.log('TOP')
 		DB[customerId] = createAccount(id, remove$(load_amount), date, customerId)
 		return true
 	} else { // just add funds
-		console.log('BOTTOM')
+		// console.log('BOTTOM')
 		// if 3 transactions break
 		// console.log('above', DB[customerId])
-		if(!verifyTranxDay(DB[customerId], date, customerId)) return false
-		// console.log('CHECK', verifyAmountPerDay(DB[customerId], date))
-		if(!verifyAmountPerDay(DB[customerId], date, load_amount)) return false
 
+		if(!verifyTranxDay(DB[customerId], date, customerId)) return false
+		console.log('one')
+		// console.log('CHECK', verifyAmountPerDay(DB[customerId], date, load_amount))
+		if(!verifyAmountPerDay(DB[customerId], date, load_amount)) return false
+		console.log('two')
+		if(!verifyAmountWeek(DB[customerId], date, load_amount)) return false
+		console.log('three')
+		// console.log('below')
 		// console.log(verifyAmountPerDay(DB[customerId], date))
 		getTranxDay(DB[customerId])
-		console.log('below', DB[customerId])
+		// console.log('below', DB[customerId])
 		DB[customerId][date] = addFunds(id, remove$(load_amount), customerId, date)
-		console.log('after load', DB[customerId])
+		// console.log('after load', DB[customerId])
 		return true
 	}
 	return false
 }
+// https://stackoverflow.com/a/44330556/5972531
+function isSameWeek(currentDate, otherTranxDate) {
+	var input1 = moment(currentDate, moment.ISO_8601)
+	var input2 = moment(otherTranxDate, moment.ISO_8601)
+	// console.log(input1, input2)
+	return input1.isoWeek() === input2.isoWeek() ? true : false
 
+}
+// console.log(isSameWeek("2000-01-01T00:00:00Z", "1999-12-31T09:00:00Z"))
+
+function getWeeklySum(custObj, currentDate) {
+	// console.log("CURRENT", custObj)
+	let vals = []
+	Object.keys(custObj).forEach(date => {
+		// console.log('check week date', date)
+		// console.log(custObj[arr])
+		if(isSameWeek(date, currentDate)) {
+			// console.log('what', custObj[date])
+			// console.log(custObj[date].loadAmount)
+			let amount = custObj[date].loadAmount
+			vals.push(amount)
+		} else {
+			// console.log('not same')
+		}
+	})
+	if(!vals.length) return 0
+	let sum = vals.reduce((acc, cur) => {
+		return parseFloat(acc) + parseFloat(cur)
+	})
+	// console.log(sum)
+	// console.log(load_amount)
+	return parseFloat(sum)
+}
+
+function verifyAmountWeek(custObj, date, load_amount) {
+	let weeklySum = getWeeklySum(custObj, date, load_amount)
+	// console.log('WEEKSUM', weeklySum + parseFloat(remove$(load_amount)))
+	if(weeklySum + parseFloat(remove$(load_amount)) > 20000) {
+		console.log("Weekly limit of 20000 has been reached")
+		return false
+	} else {
+		return true
+	}
+
+
+}
 // takes date and returns a easy to read string
 function makeDateObj(dateStr) {
 	// console.log("DS", dateStr)
 	const date = new Date(dateStr)
-	const y = date.getFullYear()
-	const m = date.getMonth() + 1
-	const d = date.getDate()
+	// const y = date.getFullYear()
+	// const m = date.getMonth() + 1
+	// const d = date.getDate()
+	const y = date.getUTCFullYear()
+	const m = date.getUTCMonth() + 1
+	const d = date.getUTCDate()
 	let tranxKey = `${y}-${m}-${d}`
 	// console.log('tra', tranxKey)
 	return tranxKey
@@ -87,9 +145,11 @@ function getDailySum(custObj, date) {
 }
 // takes customer obj and date str
 function verifyAmountPerDay(custObj, date, load_amount) {
-	// console.log(load_amount)
+	// console.log('CC', custObj, date, load_amount)
 	// console.log(date)
 	let dailySum = getDailySum(custObj, date)
+	console.log('SUM', dailySum)
+	console.log(custObj)
 	if(parseFloat(dailySum) + parseFloat(remove$(load_amount)) > 5000) {
 		console.log("Maximum depoist of 5000 reached. Cannot add.")
 		return false
@@ -111,7 +171,7 @@ function verifyTranxDay(custObj, date, id) {
 		if(currentDate === tranxDate) {
 			// console.log('amount', tranxPerDay[tranxDate])
 			if(parseInt(tranxPerDay[tranxDate]) >= 3) {
-				console.error("Maximun 3 transactions per day reached")
+				console.log("Maximun 3 transactions per day reached")
 				return false
 			}
 		}
@@ -121,6 +181,10 @@ function verifyTranxDay(custObj, date, id) {
 }
 
 function createAccount(id, load_amount, date, customerId) {
+	// console.log(id)
+	let obj = {
+		[date]: addFunds(id, load_amount, customerId, date)
+	}
 	// create and add funds
 	return {
 		[date]: addFunds(id, load_amount, customerId, date)
@@ -128,25 +192,22 @@ function createAccount(id, load_amount, date, customerId) {
 }
 // logs needed
 function verifyUnder5000(amount) {
+	// console.log(amount)
 	if(amount > 5000) {
 		return false
 	}
 	return true
 }
 
-function verifyAmountWeek() {
 
-}
-
-
-function addFunds(id, load_amount, customer_id, date) {
+function addFunds(tranxId, load_amount, customer_id, date) {
 	// console.log("add", id, load_amount, customer_id)
 	if(verifyUnder5000) {
-		console.log('FUNDS ADDED:', load_amount)
+		// console.log('FUNDS ADDED:', load_amount)
 		// add funds only
 		return {
 			id: customer_id,
-			tranxId: id,
+			tranxId: tranxId,
 			loadAmount: load_amount,
 			readAbleDate: makeDateObj(date)
 		}
@@ -166,19 +227,71 @@ function remove$(str) {
 		return str
 	}
 }
+// /https://stackoverflow.com/a/49713276/5972531
+
+function convertToJson(file) {
+
+	return new Promise((resolve, reject) => {
+
+		const stream = fs.createReadStream(file);
+		// Handle stream error (IE: file not found)
+		stream.on('error', reject);
+
+		const reader = readline.createInterface({
+			input: stream
+		});
+
+		const array = [];
+
+		reader.on('line', line => {
+			array.push(JSON.parse(line));
+		});
+
+		reader.on('close', () => resolve(array));
+	});
+}
+
+let data = []
+let answers = []
+convertToJson('input.txt')
+	.then(res => {
+		res.forEach(obj => data.push(obj))
+	})
+	.catch(err => console.error(err));
+convertToJson('output.txt')
+	.then(res => {
+		res.forEach(obj => answers.push(obj))
+	})
+	.catch(err => console.error(err));
 
 
-handleAccount("15888", "$400.47", "2000-01-01T00:00:00Z", "528")
-handleAccount("15889", "$4500.47", "1999-12-31T09:00:00Z", "528")
-handleAccount("15866", "700.47", "2000-01-01T02:00:00Z", "528")
 
-handleAccount("15883", "$447.", "2001-02-01T00:00:00Z", "528")
-handleAccount("15866", "$447.", "2001-02-01T04:00:00Z", "528")
-handleAccount("1585", "$447.", "2001-02-01T06:00:00Z", "528")
-handleAccount("15845", "$500.", "2001-03-01T00:00:00Z", "529")
-handleAccount("15864", "$400.47", "2000-01-01T02:00:00Z", "529")
-handleAccount("15876", "$400.47", "2000-01-01T01:00:00Z", "529")
-console.log('DB', DB)
+setTimeout(function() {
+	let countRight = 0
+	let countWrong = 0
+	data.forEach((obj, i) => {
+		// console.log()
+		let res = handleAccount(obj.id, obj.load_amount, obj.time, obj.customer_id)
+		console.log(i, obj.customer_id, res)
+		console.log(i, res === answers[i].accepted)
+		// if(answers[i] && res === answers[i].accepted) {
+		// 	countRight++
+		// } else {
+		// 	countWrong++
+		// }
+	})
+	// console.log(countRight, countWrong)
+	// console.log(DB)
+}, 100)
+// handleAccount("15889", "$4500.47", "1999-12-31T09:00:00Z", "528")
+// handleAccount("15866", "700.47", "2000-01-01T02:00:00Z", "528")
+//
+// handleAccount("15883", "$447.", "2001-02-01T00:00:00Z", "528")
+// handleAccount("15866", "$447.", "2001-02-01T04:00:00Z", "528")
+// handleAccount("1585", "$447.", "2001-02-01T06:00:00Z", "528")
+// handleAccount("15845", "$500.", "2001-03-01T00:00:00Z", "529")
+// handleAccount("15864", "$400.47", "2000-01-01T02:00:00Z", "529")
+// handleAccount("15876", "$400.47", "2000-01-01T01:00:00Z", "529")
 // customerId: {
 //     date: [
 //         {
@@ -210,6 +323,8 @@ module.exports = {
 	remove$: remove$,
 	makeDateObj: makeDateObj,
 	getDailySum: getDailySum,
-	verifyAmountPerDay: verifyAmountPerDay
+	verifyAmountPerDay: verifyAmountPerDay,
+	isSameWeek: isSameWeek,
+	getWeeklySum: getWeeklySum
 
 }

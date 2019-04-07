@@ -94,28 +94,101 @@ describe("Koho tests", function() {
 					}
 				}
 				let res = customer.verifyAmountPerDay(custObj, "2000-01-01T00:00:00Z", customer.remove$("$700"))
-				console.log('RES', res)
+				// console.log('RES', res)
 				assert(!res)
 			})
-			it("should not include new amount in DB", function() {
+			it.only("returns true if total is under 5000", function() {
 				let custObj = {
-					'2000-01-01T00:00:00Z': {
-						id: '528',
-						tranxId: '15888',
-						loadAmount: '400.47',
-						readAbleDate: '1999-12-31'
+					'2000-01-01T09:12:18Z': {
+						id: '647',
+						tranxId: '20790',
+						loadAmount: '3930.15',
+						readAbleDate: '2000-1-1'
 					},
-					'1999-12-31T09:00:00Z': {
-						id: '528',
-						tranxId: '15889',
-						loadAmount: '4500.47',
-						readAbleDate: '1999-12-31'
+					'2000-01-03T23:35:40Z': {
+						id: '647',
+						tranxId: '4611',
+						loadAmount: '1691.03',
+						readAbleDate: '2000-1-3'
+					},
+					'2000-01-04T00:37:02Z': {
+						id: '647',
+						tranxId: '2318',
+						loadAmount: '1237.56',
+						readAbleDate: '2000-1-4'
 					}
 				}
-
 				let res = customer.verifyAmountPerDay(custObj, "2000-01-01T00:00:00Z", customer.remove$("$700"))
-				assert(false)
+				console.log('RES', res)
+				assert(res)
 			})
+			describe("isSameWeek()", function() {
+				it("returns true when in the same week", function() {
+					let res = customer.isSameWeek("2019-04-06T22:24:18.401Z", "2019-04-05T00:18:40Z")
+					console.log('res', res)
+					assert(res)
+				})
+				it("returns something", function() {
+					let res = customer.isSameWeek("2000-01-01T00:00:00Z", "2000-01-01T11:15:02Z")
+					console.log('res', res)
+					assert(res)
+				})
+			})
+			describe("getWeeklySum()", function() {
+				it("returns sum of same week days", function() {
+					let custObj = {
+						'2000-01-01T00:00:00Z': {
+							id: '528',
+							tranxId: '15888',
+							loadAmount: '400.47',
+							readAbleDate: '1999-12-31'
+						},
+						'1999-12-31T09:00:00Z': {
+							id: '528',
+							tranxId: '15889',
+							loadAmount: '4500.47',
+							readAbleDate: '1999-12-31'
+						},
+						'1999-12-30T00:00:00Z': {
+							id: '528',
+							tranxId: '15883',
+							loadAmount: '447.',
+							readAbleDate: '2001-1-31'
+						}
+					}
+					let res = customer.getWeeklySum(custObj, "2000-01-03T00:00:00Z", "$3000")
+					console.log('res', res)
+					assert(res === 5347.9400000000005)
+				})
+			})
+			describe("verifyAmountWeek()", function() {
+				it("returns true is under 20000", function() {
+					let custObj = {
+						'2000-01-01T00:00:00Z': {
+							id: '528',
+							tranxId: '15888',
+							loadAmount: '700',
+							readAbleDate: '1999-12-31'
+						},
+						'1999-12-31T09:00:00Z': {
+							id: '528',
+							tranxId: '15889',
+							loadAmount: '4500.47',
+							readAbleDate: '1999-12-31'
+						},
+						'1999-12-30T00:00:00Z': {
+							id: '528',
+							tranxId: '15883',
+							loadAmount: '15000',
+							readAbleDate: '2001-1-31'
+						}
+					}
+					let res = customer.verifyAmountWeek(custObj, "2000-01-03T00:00:00Z", "$3000")
+					// console.log('res', res)
+					assert(!res)
+				})
+			})
+
 		})
 	})
 })
